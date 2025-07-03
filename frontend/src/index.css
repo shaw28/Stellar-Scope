@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-black text-yellow-400;
+  background-image: radial-gradient(white 1px, transparent 1px),
+    radial-gradient(white 1px, transparent 1px);
+  background-position: 0 0, 50px 50px;
+  background-size: 100px 100px;
+  animation: starfield 20s linear infinite;
+}
+
+@keyframes starfield {
+  from {
+    background-position: 0 0, 50px 50px;
+  }
+  to {
+    background-position: 1000px 1000px, 1050px 1050px;
+  }
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease forwards;
+}
+
+.animate-fade-in.delay-300 {
+  animation-delay: 0.3s;
+}
+
+.glow-button {
+  @apply px-4 py-2 rounded-lg text-yellow-300 font-bold bg-black border border-yellow-400 shadow hover:scale-105 hover:bg-yellow-400 hover:text-black transition-all duration-300;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 30s linear infinite;
+}
+
+
+
+@keyframes scrollText {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+.animate-\[scrollText_20s_linear_infinite\] {
+  animation: scrollText 20s linear infinite;
+}

@@ -11,12 +11,14 @@ import earthTex from '../assets/textures/earth.jpg';
 import marsTex from '../assets/textures/mars.jpg';
 import moonTex from '../assets/textures/moon.jpg';
 import sunTex from '../assets/textures/sun.jpg';
+import asteroidTex from '../assets/textures/asteroid.jpg';
+
 
 
 const PLANETS = [
   {
     name: 'Earth',
-    path: '/asteroids',
+    path: '/eonet',
     texture: earthTex,
     radius: 12,
     orbitSpeed: 0.007,
@@ -25,7 +27,7 @@ const PLANETS = [
   },
   {
     name: 'Mars',
-    path: '/media',
+    path: '/mars',
     texture: marsTex,
     radius: 15,
     orbitSpeed: 0.005,
@@ -34,7 +36,7 @@ const PLANETS = [
   },
   {
     name: 'Moon',
-    path: '/apod',
+    path: '/media',
     texture: moonTex,
     radius: 6,
     orbitSpeed: 0.01,
@@ -52,19 +54,24 @@ const PLANETS = [
   }
 ];
 
-function Planet({ planet, onHover }) {
+function Planet({ planet, onHover, stopMotion }) {
   const mesh = useRef();
   const texture = useLoader(THREE.TextureLoader, planet.texture);
   const [angle, setAngle] = useState(Math.random() * Math.PI * 2);
 
   useFrame(() => {
-    setAngle((prev) => prev + planet.orbitSpeed); // very slow
+    if (!stopMotion) {
+      setAngle((prev) => prev + planet.orbitSpeed * 0.2);
+    }
+
     const x = planet.radius * Math.cos(angle);
     const z = planet.radius * Math.sin(angle);
 
     if (mesh.current) {
       mesh.current.position.set(x, 0, z);
-      mesh.current.rotation.y += 0.001; // subtle spin
+      if (!stopMotion) {
+        mesh.current.rotation.y += 0.001;
+      }
     }
   });
 
@@ -80,73 +87,136 @@ function Planet({ planet, onHover }) {
         <meshStandardMaterial map={texture} />
       </mesh>
       <mesh rotation-x={Math.PI / 2}>
-        <ringGeometry args={[planet.radius - 0.05, planet.radius + 0.05, 64]} />
+        <ringGeometry args={[planet.radius - 0.05, planet.radius + 0.05, 128]} />
         <meshBasicMaterial color="white" transparent opacity={0.2} />
       </mesh>
     </>
   );
 }
 
-function StarWarsText({ hoveredDescription }) {
-  const ref = useRef();
-  const [yPos, setYPos] = useState(-12);
-  const [opacity, setOpacity] = useState(1);
+function Asteroid({ onHover, stopMotion }) {
+  const mesh = useRef();
+  const texture = useLoader(THREE.TextureLoader, asteroidTex);
+  const [xPos, setXPos] = useState(-40);
 
   useFrame(() => {
-    if (!hoveredDescription && ref.current) {
-      const newY = yPos + 0.01;
-      setYPos(newY);
-      ref.current.position.y = newY;
-
-      if (newY > 5) setOpacity((prev) => Math.max(prev - 0.01, 0));
-      if (newY > 10) {
-        setYPos(-12);
-        setOpacity(1);
+    if (!stopMotion) {
+      const newX = xPos >= 40 ? -40 : xPos + 0.03;
+      setXPos(newX);
+      if (mesh.current) {
+        mesh.current.position.set(newX, 0.5, -10);
+        mesh.current.rotation.y += 0.002;
       }
     }
   });
 
   return (
-    <Text
-      ref={ref}
-      position={[0, hoveredDescription ? 0 : yPos, -20]}
-      rotation={[-0.35, 0, 0]}
-      fontSize={2}
-      maxWidth={22}
-      lineHeight={1.4}
-      color="yellow"
-      anchorX="center"
-      anchorY="middle"
+    <mesh
+      ref={mesh}
+      onPointerOver={() =>
+        onHover('☄️ Near-Earth Asteroid Tracker: Real-time detection of asteroids skimming Earth.')
+      }
+      onPointerOut={() => onHover(null)}
+      onClick={() => window.location.href = '/asteroids'}
     >
-      {hoveredDescription || `Welcome to StellarScope.\n\nEach planet holds a data stream.\nClick to begin your journey.`}
-    </Text>
+      <icosahedronGeometry args={[0.6, 1]} />
+      <meshStandardMaterial
+        map={texture}
+        emissive="gray"
+        emissiveIntensity={0.5}
+        roughness={0.8}
+      />
+    </mesh>
   );
 }
 
 function SolarSystem() {
   const [hoveredDescription, setHoveredDescription] = useState(null);
 
+  const updatedPlanets = [
+    {
+      name: 'Sun',
+      texture: sunTex,
+      radius: 0,
+      size: 3.2,
+      orbitSpeed: 0,
+      path: '/donki',
+      description: '☀️ Space Weather Relay: Track solar flares and coronal mass ejections.'
+    },
+    {
+      name: 'Mercury',
+      texture: moonTex,
+      radius: 5,
+      size: 0.4,
+      orbitSpeed: 0.011,
+      path: '/apod',
+      description: '🌌 APOD Gateway: Daily astronomy photographs from across the cosmos.'
+    },
+    {
+      name: 'Venus',
+      texture: marsTex,
+      radius: 8,
+      size: 0.6,
+      orbitSpeed: 0.008,
+      path: '/media',
+      description: '📡 Media Library: Explore archived imagery and video from space missions.'
+    },
+    {
+      name: 'Earth',
+      texture: earthTex,
+      radius: 12,
+      size: 0.8,
+      orbitSpeed: 0.006,
+      path: '/eonet',
+      description: '🌍 Earth Watch: Real-time environmental and disaster tracking from NASA.'
+    },
+    {
+      name: 'Mars',
+      texture: marsTex,
+      radius: 15,
+      size: 0.7,
+      orbitSpeed: 0.004,
+      path: '/mars',
+      description: '🚀 Mars Feed: Access live rovers’ image archive and mission snapshots.'
+    }
+  ];
+
   return (
     <div className="flex items-center justify-between w-full h-[90vh]">
-      {/* Left - Solar System */}
-      <Canvas camera={{ position: [0, 40, 0], fov: 50 }} className="w-3/5 h-full">
-        <color attach="background" args={["black"]} />
+      <Canvas camera={{ position: [25, 20, 25], fov: 35 }} className="w-3/5 h-full">
+        <color attach="background" args={['black']} />
         <Stars radius={300} depth={60} count={20000} factor={7} fade />
-        <ambientLight intensity={0.9} />
-        <pointLight position={[0, 0, 0]} intensity={3} />
-        {PLANETS.map((planet) => (
-          <Planet key={planet.name} planet={planet} onHover={setHoveredDescription} />
+        <ambientLight intensity={1.2} />
+        <pointLight position={[90, 80, 90]} intensity={4} />
+
+        {/* Static Sun */}
+        <mesh onPointerOver={() => setHoveredDescription(updatedPlanets[0].description)}
+              onPointerOut={() => setHoveredDescription(null)}
+              onClick={() => window.location.href = updatedPlanets[0].path}>
+          <sphereGeometry args={[3.2, 64, 64]} />
+          <meshStandardMaterial map={useLoader(THREE.TextureLoader, updatedPlanets[0].texture)} />
+        </mesh>
+
+        {/* Planets */}
+        {updatedPlanets.slice(1).map((planet) => (
+          <Planet
+            key={planet.name}
+            planet={planet}
+            onHover={setHoveredDescription}
+            stopMotion={hoveredDescription === planet.description}
+          />
         ))}
-        <OrbitControls
-          enableZoom={false}
-          enableRotate={false}
-          enablePan={false}
-          maxPolarAngle={Math.PI / 2}
-          minPolarAngle={Math.PI / 2}
+
+        {/* Asteroid */}
+        <Asteroid
+          onHover={setHoveredDescription}
+          stopMotion={hoveredDescription?.includes('Asteroid')}
         />
+
+        <OrbitControls enableZoom enablePan enableRotate />
       </Canvas>
 
-      {/* Right - StarWarsText or Description */}
+      {/* Right - Star Wars Style Text */}
       <div className="w-3/5 h-full flex items-center justify-center">
         <Canvas camera={{ position: [0, 0, 40], fov: 45 }} className="w-full h-full">
           <Stars radius={100} depth={50} count={7000} factor={4} fade />
@@ -157,6 +227,8 @@ function SolarSystem() {
     </div>
   );
 }
+
+
 
 
 
@@ -173,6 +245,103 @@ function Sun() {
   );
 }
 
+function Moon({ parentRef, onHover }) {
+  const moonMesh = useRef();
+  const moonTexture = useLoader(THREE.TextureLoader, moonTex);
+  const [angle, setAngle] = useState(0);
+
+  useFrame(() => {
+    if (moonMesh.current && parentRef.current) {
+      setAngle((prev) => prev + 0.02); // fast moon orbit
+      const radius = 2.0;
+      const x = parentRef.current.position.x + radius * Math.cos(angle);
+      const z = parentRef.current.position.z + radius * Math.sin(angle);
+      moonMesh.current.position.set(x, 0.5, z);
+    }
+  });
+
+  return (
+    <>
+      <mesh
+        ref={moonMesh}
+        onPointerOver={() =>
+          onHover('🛰️ NASA Media Library: Explore mission photos, videos, and audio from Moon and beyond.')
+        }
+        onPointerOut={() => onHover(null)}
+        onClick={() => (window.location.href = '/media')}
+      >
+        <sphereGeometry args={[0.3, 32, 32]} />
+        <meshStandardMaterial map={moonTexture} />
+      </mesh>
+
+      {/* Moon orbit ring around Earth */}
+      <mesh rotation-x={Math.PI / 2}>
+        <ringGeometry args={[1.95, 2.05, 128]} />
+        <meshBasicMaterial color="white" transparent opacity={0.2} />
+      </mesh>
+    </>
+  );
+}
+
+
+function StarWarsText({ hoveredDescription }) {
+  const ref = useRef();
+  const [yPos, setYPos] = useState(-12);
+  const [opacity, setOpacity] = useState(1);
+  const [activeText, setActiveText] = useState('');
+  const [scrolling, setScrolling] = useState(true);
+
+  const defaultText = `Welcome to StellarScope.\n\nEach planet holds a data stream.\nClick to begin your journey.`;
+
+  useEffect(() => {
+    // When a planet is hovered
+    if (hoveredDescription) {
+      setActiveText(hoveredDescription);
+      setYPos(-12);
+      setOpacity(1);
+      setScrolling(true);
+    } else {
+      // When no planet is hovered, return to default intro scroll
+      setActiveText(defaultText);
+      setYPos(-12);
+      setOpacity(1);
+      setScrolling(true);
+    }
+  }, [hoveredDescription]);
+
+  useFrame(() => {
+    if (ref.current && scrolling) {
+      const newY = yPos + 0.015;
+      setYPos(newY);
+      ref.current.position.y = newY;
+
+      if (newY > 5) {
+        setOpacity((prev) => Math.max(prev - 0.015, 0));
+      }
+      if (newY > 10) {
+        setYPos(-12);
+        setOpacity(1);
+      }
+    }
+  });
+
+  return (
+    <Text
+      ref={ref}
+      position={[0, yPos, -20]}
+      rotation={[-0.3, 0, 0]}
+      fontSize={2}
+      maxWidth={24}
+      lineHeight={1.4}
+      color="yellow"
+      anchorX="center"
+      anchorY="middle"
+      fillOpacity={opacity}
+    >
+      {activeText}
+    </Text>
+  );
+}
 
 
 

@@ -7,7 +7,7 @@ StellarScope is a full stack web application that implements NASA’s open APIs 
 <img width="1274" alt="image" src="https://github.com/user-attachments/assets/04b2aac7-1cb6-4f33-a630-771adb4bfb72" />
 
 
-## 🌐 Live Application
+## @Live Application
 
 👉 [Live Link FrontEnd - https://stellar-scope-frontend.vercel.app/ ]
 
@@ -29,7 +29,7 @@ StellarScope/
 ├── README.md
 └── package.json
 
-## 🧠 Features
+## @Features
 
 - 🌌 **Interactive Solar System**: Hover/click planets to explore real NASA APIs.
 - 🖼️ **APOD**: Astronomy Picture of the Day.
